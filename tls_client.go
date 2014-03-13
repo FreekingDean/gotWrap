@@ -7,19 +7,19 @@ import (
 )
 
 type Client struct {
-    remoteAddr string
-    protocall string
-    pemFile string
-    keyFile string
+    RemoteAddr string
+    Protocall string
+    PemFile string
+    KeyFile string
 }
 
 func (client *Client) Connect() {
-    cert, err := tls.LoadX509KeyPair(client.pemFile, client.keyFile)
+    cert, err := tls.LoadX509KeyPair(client.PemFile, client.KeyFile)
     if err != nil {
         log.Fatalf("server: loadkeys: %s", err)
     }
     config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
-    conn, err := tls.Dial(client.protocall, client.remoteAddr, &config)
+    conn, err := tls.Dial(client.Protocall, client.RemoteAddr, &config)
     if err != nil {
         log.Fatalf("client: dial: %s", err)
     }

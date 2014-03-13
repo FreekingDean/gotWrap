@@ -7,20 +7,20 @@ import (
 )
 
 type Server struct {
-	protocall string
-	listenerAddress string
-	pemFile string
-	keyFile string
+	Protocall string
+	ListenerAddress string
+	PemFile string
+	KeyFile string
 }
 
 func (server *Server) CreateServer() {
 	//TODO - Auto gen certs upon first start
-	cert, err := tls.LoadX509KeyPair(server.pemFile, server.keyFile)
+	cert, err := tls.LoadX509KeyPair(server.PemFile, server.KeyFile)
 	if err != nil {
 	log.Fatalf("server: loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
-	listener, err := tls.Listen(server.protocall, server.listenerAddress, &config)
+	listener, err := tls.Listen(server.Protocall, server.ListenerAddress, &config)
 	if err != nil {
 		log.Fatalf("server: listening on: %s :%s", listener.Addr().String(), err)
 	}
