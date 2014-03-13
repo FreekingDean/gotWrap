@@ -6,14 +6,21 @@ import (
 	"log"
 )
 
-func CreateServer() {
+type Server struct {
+	protocall string
+	listenerAddress string
+	pemFile string
+	keyFile string
+}
+
+func (server *Server) CreateServer() {
 	//TODO - Auto gen certs upon first start
-	cert, err := tls.LoadX509KeyPair("certs/server.pem", "certs/server.key")
+	cert, err := tls.LoadX509KeyPair(server.pemFile, server.keyFile)
 	if err != nil {
 	log.Fatalf("server: loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
-	listener, err := tls.Listen("tcp", "127.0.0.1:8000", &config)
+	listener, err := tls.Listen(server.protocall, server.listenerAddress, &config)
 	if err != nil {
 		log.Fatalf("server: listening on: %s :%s", listener.Addr().String(), err)
 	}

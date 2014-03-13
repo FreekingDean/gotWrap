@@ -6,13 +6,20 @@ import (
     "log"
 )
 
-func Connect() {
-    cert, err := tls.LoadX509KeyPair("certs/client.pem", "certs/client.key")
+type Client struct {
+    remoteAddr string
+    protocall string
+    pemFile string
+    keyFile string
+}
+
+func (client *Client) Connect() {
+    cert, err := tls.LoadX509KeyPair(client.pemFile, client.keyFile)
     if err != nil {
         log.Fatalf("server: loadkeys: %s", err)
     }
     config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
-    conn, err := tls.Dial("tcp", "127.0.0.1:8000", &config)
+    conn, err := tls.Dial(client.protocall, client.remoteAddr, &config)
     if err != nil {
         log.Fatalf("client: dial: %s", err)
     }
