@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func createServer() {
+func CreateServer() {
 	//TODO - Auto gen certs upon first start
 	cert, err := tls.LoadX509KeyPair("certs/server.pem", "certs/server.key")
 	if err != nil {

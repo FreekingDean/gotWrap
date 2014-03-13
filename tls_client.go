@@ -6,7 +6,7 @@ import (
     "log"
 )
 
-func connect() {
+func Connect() {
     cert, err := tls.LoadX509KeyPair("certs/client.pem", "certs/client.key")
     if err != nil {
         log.Fatalf("server: loadkeys: %s", err)
