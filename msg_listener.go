@@ -15,7 +15,7 @@ func CreateServer() {
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
 	listener, err := tls.Listen("tcp", "127.0.0.1:8000", &config)
 	if err != nil {
-		log.Fatalf("server: listen: %s", err)
+		log.Fatalf("server: listening on: %s :%s", listener.Addr().String(), err)
 	}
 	log.Print("server: listening")
 	for {
