@@ -13,7 +13,7 @@ func CreateServer() {
 	log.Fatalf("server: loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
-	listener, err := tls.Listen("tcp", "0.0.0.0:8000", &config)
+	listener, err := tls.Listen("tcp", "127.0.0.1:8000", &config)
 	if err != nil {
 		log.Fatalf("server: listen: %s", err)
 	}
