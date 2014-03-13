@@ -7,8 +7,8 @@ import (
 )
 
 type Server struct {
-	Protocall string
-	ListenerAddress string
+	ListenerAddr string
+	Protocol string
 	PemFile string
 	KeyFile string
 }
@@ -20,7 +20,7 @@ func (server *Server) CreateServer() {
 	log.Fatalf("server: loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
-	listener, err := tls.Listen(server.Protocall, server.ListenerAddress, &config)
+	listener, err := tls.Listen(server.Protocol, server.ListenerAddr, &config)
 	if err != nil {
 		log.Fatalf("server: listening on: %s :%s", listener.Addr().String(), err)
 	}
