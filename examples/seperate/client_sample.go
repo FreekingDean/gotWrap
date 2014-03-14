@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"strconv"
 	"github.com/FreekingDean/gotWrap"
 )
 
@@ -18,5 +19,8 @@ func main() {
 		KeyFile: *key,
 	}
 	c.Connect()
-	c.SendMessage("Hello\n")
+	for i:=0;i<100;i++ {
+
+		c.SendMessage("Hello"+strconv.Itoa(i)+"\n")
+	}
 }
