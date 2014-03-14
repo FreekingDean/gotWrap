@@ -2,7 +2,6 @@ package gotWrap
 
 import (
     "crypto/tls"
-    "net"
     "io"
     "log"
 )
@@ -25,13 +24,12 @@ func (client *Client) Connect() {
     if err != nil {
         log.Fatalf("client: dial: %s", err)
     }
-    defer client.conn.Close()
     log.Println("client: connected to: ", client.conn.RemoteAddr())
     state := client.conn.ConnectionState()
     log.Println("client: handshake: ", state.HandshakeComplete)
     log.Println("client: mutual: ", state.NegotiatedProtocolIsMutual)
     
-    go listen(client.conn)
+    go client.listen()
 }
 
 func (client *Client) SendMessage(m string) {
@@ -43,14 +41,12 @@ func (client *Client) SendMessage(m string) {
     log.Printf("client: wrote %q (%d bytes)", message, n)
 }
 
-func listen(conn net.Conn) {
-    tlscon, ok := conn.(*tls.Conn)
-    if ok {
-        reply := make([]byte, 256)
-        n, err := tlscon.Read(reply)
-        if err != nil {
-            log.Fatalf("client: dial: %s", err)
-        }
-        log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
+func (client *Client) listen() {
+    defer client.conn.Close()
+    reply := make([]byte, 256)
+    n, err := client.conn.Read(reply)
+    if err != nil {
+        log.Fatalf("client: dial: %s", err)
     }
+    log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
 }

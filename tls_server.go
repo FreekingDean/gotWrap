@@ -47,8 +47,8 @@ func handleClient(conn net.Conn) {
 		} else {
 			log.Print("server: conn: Handshake completed")
 		}
-		//state := tlscon.ConnectionState()
-		log.Println("Server: client public key is:")
+		state := tlscon.ConnectionState()
+		log.Println("server: mutual: ", state.NegotiatedProtocolIsMutual)
 		buf := make([]byte, 512)
 		for {
 			log.Print("server: conn: waiting")

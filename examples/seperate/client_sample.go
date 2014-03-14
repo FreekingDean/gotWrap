@@ -18,5 +18,5 @@ func main() {
 		KeyFile: *key,
 	}
 	c.Connect()
-	c.SendMessage("Hello")
+	c.SendMessage("Hello\n")
 }
