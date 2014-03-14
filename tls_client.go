@@ -28,14 +28,22 @@ func (client *Client) Connect() {
     state := conn.ConnectionState()
     log.Println("client: handshake: ", state.HandshakeComplete)
     log.Println("client: mutual: ", state.NegotiatedProtocolIsMutual)
+    
+    go listen(conn)
+}
+
+func (client *Client) SendMessage(m string) {
     message := "Hello\n"
     n, err := io.WriteString(conn, message)
     if err != nil {
         log.Fatalf("client: write: %s", err)
     }
     log.Printf("client: wrote %q (%d bytes)", message, n)
+}
+
+func listen(conn net.Conn) {
+    tlscon, ok := conn.(*tls.Conn)
     reply := make([]byte, 256)
     n, err = conn.Read(reply)
     log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
-    log.Print("client: exiting")
 }
