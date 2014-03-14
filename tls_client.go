@@ -12,6 +12,7 @@ type Client struct {
     Protocol string
     PemFile string
     KeyFile string
+    conn *tls.Conn
 }
 
 func (client *Client) Connect() {
@@ -20,22 +21,22 @@ func (client *Client) Connect() {
         log.Fatalf("server: loadkeys: %s", err)
     }
     config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
-    conn, err := tls.Dial(client.Protocol, client.RemoteAddr, &config)
+    client.conn, err = tls.Dial(client.Protocol, client.RemoteAddr, &config)
     if err != nil {
         log.Fatalf("client: dial: %s", err)
     }
-    defer conn.Close()
-    log.Println("client: connected to: ", conn.RemoteAddr())
-    state := conn.ConnectionState()
+    defer client.conn.Close()
+    log.Println("client: connected to: ", client.conn.RemoteAddr())
+    state := client.conn.ConnectionState()
     log.Println("client: handshake: ", state.HandshakeComplete)
     log.Println("client: mutual: ", state.NegotiatedProtocolIsMutual)
     
-    go listen(conn)
+    go listen(client.conn)
 }
 
 func (client *Client) SendMessage(m string) {
     message := "Hello\n"
-    n, err := io.WriteString(conn, message)
+    n, err := io.WriteString(client.conn, message)
     if err != nil {
         log.Fatalf("client: write: %s", err)
     }
@@ -44,7 +45,12 @@ func (client *Client) SendMessage(m string) {
 
 func listen(conn net.Conn) {
     tlscon, ok := conn.(*tls.Conn)
-    reply := make([]byte, 256)
-    n, err = conn.Read(reply)
-    log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
+    if ok {
+        reply := make([]byte, 256)
+        n, err := tlscon.Read(reply)
+        if err != nil {
+            log.Fatalf("client: dial: %s", err)
+        }
+        log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
+    }
 }
