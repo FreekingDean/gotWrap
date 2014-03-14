@@ -2,6 +2,7 @@ package gotWrap
 
 import (
     "crypto/tls"
+    "net"
     "io"
     "log"
 )
