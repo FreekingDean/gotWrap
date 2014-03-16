@@ -4,7 +4,6 @@ import (
 	"net"
 	"crypto/tls"
 	"log"
-	"sync"
 )
 
 type callBack func(net.Addr, string)
@@ -16,7 +15,6 @@ type Server struct {
 	KeyFile string
 	MessageRec callBack
 	connections map[net.Addr]*tls.Conn //map[RemoteAddress]TLS_Connection
-	sync.RWMutex
 }
 
 func (server *Server) CreateServer() {
@@ -42,9 +40,7 @@ func (server *Server) CreateServer() {
 		log.Printf("[gotWrap-SERVER] accepted from %s", conn.RemoteAddr())
 		tlscon, ok := conn.(*tls.Conn)
 		if ok && server.handshake(tlscon.RemoteAddr()) {
-			server.Lock()
 			server.connections[tlscon.RemoteAddr()] = tlscon
-			server.Unlock()
 			go server.handleClient(tlscon.RemoteAddr())
 		} else {
 			conn.Close()
@@ -54,16 +50,12 @@ func (server *Server) CreateServer() {
 }
 
 func (server *Server) handleClient(conn net.Addr) {
-	server.RLock()
 	defer server.connections[conn].Close()
-	server.RUnlock()
 	log.Print("[gotWrap-SERVER] conn: type assert to TLS succeedded")
 	buf := make([]byte, 512)
 	for {
 		log.Print("[gotWrap-SERVER] conn: waiting")
-		server.RLock()
 		n, err := server.connections[conn].Read(buf)
-		server.RUnlock()
 		if err != nil {
 			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)
 			break
@@ -71,39 +63,29 @@ func (server *Server) handleClient(conn net.Addr) {
  		log.Printf("[gotWrap-SERVER] conn: read: %s", string(buf[:n]))
  		server.MessageRec(conn, string(buf[:n]))		
 	}
-	server.Lock()
 	delete(server.connections, conn)
-	server.Unlock()
 	log.Println("[gotWrap-SERVER] server: conn: closed")
 }
 
 func (server *Server) handshake(conn net.Addr) bool {
-	server.RLock()
 	err := server.connections[conn].Handshake()
-	server.RUnlock()
 	if err != nil {
 		log.Fatalf("[gotWrap-SERVER] handshake failed: %s", err)
 		return false
 	} else {
 		log.Print("[gotWrap-SERVER] conn: Handshake completed")
 	}
-	server.RLock()
 	state := server.connections[conn].ConnectionState()
-	server.RUnlock()
 	log.Println("[gotWrap-SERVER] mutual: ", state.NegotiatedProtocolIsMutual)
 	return true
 }
 
 func (server *Server) SendMessage(conn net.Addr, buf[] byte) {
 	log.Printf("[gotWrap-SERVER] conn: write: %s\n", string(buf))
-	server.RLock()
 	n, err := server.connections[conn].Write(buf)
-	server.RUnlock()
 	log.Printf("[gotWrap-SERVER] conn: wrote %d bytes", n)
 	if err != nil {
 		log.Printf("[gotWrap-SERVER] write: %s", err)
-		server.RLock()
 		server.connections[conn].Close()
-		server.RUnlock()
 	}
 }
