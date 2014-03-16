@@ -1,7 +1,6 @@
 package gotWrap
 
 import (
-	"net"
 	"crypto/tls"
 	"log"
 )
@@ -39,7 +38,7 @@ func (server *Server) CreateServer() {
 		log.Printf("[gotWrap-SERVER] accepted from %s", conn.RemoteAddr())
 		tlscon, ok := conn.(*tls.Conn)
 		if ok && handshake(tlscon) {
-			go handleClient(tlscon)
+			go handleClient(tlscon, server.MessageRec)
 		} else {
 			conn.Close()
 			log.Printf("[gotWrap-SERVER] conn: closed")
@@ -47,7 +46,7 @@ func (server *Server) CreateServer() {
 	}
 }
 
-func handleClient(tlscon *tls.Conn) {
+func handleClient(tlscon *tls.Conn, mcb callBack) {
 	defer tlscon.Close()
 	log.Print("[gotWrap-SERVER] conn: type assert to TLS succeedded")
 	buf := make([]byte, 512)
@@ -59,7 +58,7 @@ func handleClient(tlscon *tls.Conn) {
 			break
  		}
  		log.Printf("[gotWrap-SERVER] conn: read: %s", string(buf[:n]))
- 		server.MessageRec(tlscon, string(buf[:n]))		
+ 		mcb(tlscon, string(buf[:n]))		
 	}
 	log.Println("[gotWrap-SERVER] server: conn: closed")
 }
@@ -77,7 +76,7 @@ func handshake(tlscon *tls.Conn) bool {
 	return true
 }
 
-func SendMessage(tlscon, buf[] byte) {
+func SendMessage(tlscon *tls.Conn, buf[] byte) {
 	log.Printf("[gotWrap-SERVER] conn: write: %s\n", string(buf))
 	n, err := tlscon.Write(buf)
 	log.Printf("[gotWrap-SERVER] conn: wrote %d bytes", n)
