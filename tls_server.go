@@ -14,7 +14,7 @@ type Server struct {
 	PemFile string
 	KeyFile string
 	MessageRec callBack
-	connections map[net.Addr]*tls.Conn //map[RemoteAddress]TLS_Connection
+	Connections map[net.Addr]*tls.Conn //map[RemoteAddress]TLS_Connection
 }
 
 func (server *Server) CreateServer() {
