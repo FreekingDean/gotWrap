@@ -4,69 +4,106 @@ import (
 	"net"
 	"crypto/tls"
 	"log"
+	"sync"
 )
+
+type callBack func(string)
 
 type Server struct {
 	ListenerAddr string
 	Protocol string
 	PemFile string
 	KeyFile string
+	messageRec callBack
+	connections map[net.Addr]*tls.Conn //map[RemoteAddress]TLS_Connection
+	sync.RWMutex
 }
 
 func (server *Server) CreateServer() {
 	//TODO - Auto gen certs upon first start
 	cert, err := tls.LoadX509KeyPair(server.PemFile, server.KeyFile)
 	if err != nil {
-	log.Fatalf("server: loadkeys: %s", err)
+		log.Fatalf("[gotWrap-SERVER] loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
+	
 	listener, err := tls.Listen(server.Protocol, server.ListenerAddr, &config)
 	if err != nil {
-		log.Fatalf("server: listening on: %s :%s", listener.Addr().String(), err)
+		log.Fatalf("[gotWrap-SERVER] listening on: %s :%s", listener.Addr().String(), err)
 	}
-	log.Print("server: listening")
+	log.Print("[gotWrap-SERVER] listening")
+	
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Printf("server: accept: %s", err)
+			log.Printf("[gotWrap-SERVER] accept: %s", err)
 			break
 		}
-		log.Printf("server: accepted from %s", conn.RemoteAddr())
-		go handleClient(conn)
+		log.Printf("[gotWrap-SERVER] accepted from %s", conn.RemoteAddr())
+		tlscon, ok := conn.(*tls.Conn)
+		if ok && server.handshake(tlscon.RemoteAddr()) {
+			server.Lock()
+			server.connections[tlscon.RemoteAddr()] = tlscon
+			server.Unlock()
+			go server.handleClient(tlscon.RemoteAddr())
+		} else {
+			conn.Close()
+			log.Printf("[gotWrap-SERVER] conn: closed")
+		}
 	}
 }
 
-func handleClient(conn net.Conn) {
-	defer conn.Close()
-	tlscon, ok := conn.(*tls.Conn)
-	if ok {
-		log.Print("server: conn: type assert to TLS succeedded")
-		err := tlscon.Handshake()
+func (server *Server) handleClient(conn net.Addr) {
+	server.RLock()
+	defer server.connections[conn].Close()
+	server.RUnlock()
+	log.Print("[gotWrap-SERVER] conn: type assert to TLS succeedded")
+	buf := make([]byte, 512)
+	for {
+		log.Print("[gotWrap-SERVER] conn: waiting")
+		server.RLock()
+		n, err := server.connections[conn].Read(buf)
+		server.RUnlock()
 		if err != nil {
-			log.Fatalf("server: handshake failed: %s", err)
-		} else {
-			log.Print("server: conn: Handshake completed")
-		}
-		state := tlscon.ConnectionState()
-		log.Println("server: mutual: ", state.NegotiatedProtocolIsMutual)
-		buf := make([]byte, 512)
-		for {
-			log.Print("server: conn: waiting")
-			n, err := conn.Read(buf)
-			if err != nil {
-				if err != nil {
-					log.Printf("server: conn: read: %s", err)
-				}
-				break
- 			}
-			log.Printf("server: conn: echo %q\n", string(buf[:n]))
-			n, err = conn.Write(buf[:n])
-			log.Printf("server: conn: wrote %d bytes", n)
-			if err != nil {
-				log.Printf("server: write: %s", err)
-				break
-			}
-		}
+			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)
+			break
+ 		}
+ 		log.Printf("[gotWrap-SERVER] conn: read: %s", string(buf[:n]))
+ 		server.messageRec(string(buf[:n]))		
 	}
-	log.Println("server: conn: closed")
+	server.Lock()
+	delete(server.connections, conn)
+	server.Unlock()
+	log.Println("[gotWrap-SERVER] server: conn: closed")
+}
+
+func (server *Server) handshake(conn net.Addr) bool {
+	server.RLock()
+	err := server.connections[conn].Handshake()
+	server.RUnlock()
+	if err != nil {
+		log.Fatalf("[gotWrap-SERVER] handshake failed: %s", err)
+		return false
+	} else {
+		log.Print("[gotWrap-SERVER] conn: Handshake completed")
+	}
+	server.RLock()
+	state := server.connections[conn].ConnectionState()
+	server.RUnlock()
+	log.Println("[gotWrap-SERVER] mutual: ", state.NegotiatedProtocolIsMutual)
+	return true
+}
+
+func (server *Server) SendMessage(conn net.Addr, buf[] byte) {
+	log.Printf("[gotWrap-SERVER] conn: write: %s\n", string(buf))
+	server.RLock()
+	n, err := server.connections[conn].Write(buf)
+	server.RUnlock()
+	log.Printf("[gotWrap-SERVER] conn: wrote %d bytes", n)
+	if err != nil {
+		log.Printf("[gotWrap-SERVER] write: %s", err)
+		server.RLock()
+		server.connections[conn].Close()
+		server.RUnlock()
+	}
 }

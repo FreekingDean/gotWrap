@@ -37,8 +37,9 @@ func (client *Client) SendMessage(m string) {
     n, err := io.WriteString(client.conn, message)
     if err != nil {
         log.Fatalf("client: write: %s", err)
+        client.conn.Close()
     }
-    log.Printf("client: wrote %q (%d bytes)", message, n)
+    log.Printf("client: wrote %s (%d bytes)", message, n)
 }
 
 func (client *Client) listen() {
@@ -49,6 +50,6 @@ func (client *Client) listen() {
         if err != nil {
             log.Fatalf("client: dial: %s", err)
         }
-        log.Printf("client: read %q (%d bytes)", string(reply[:n]), n)
+        log.Printf("client: read %s (%d bytes)", string(reply[:n]), n)
     }
 }
