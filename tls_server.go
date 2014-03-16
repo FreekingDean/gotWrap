@@ -57,7 +57,7 @@ func handleClient(tlscon *tls.Conn, mcb callBack) {
 			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)
 			break
  		}
- 		log.Printf("[gotWrap-SERVER] conn: read: %q", string(buf))
+ 		log.Printf("[gotWrap-SERVER] conn: read: %q", string(buf[:n]))
  		mcb(tlscon, string(buf[:n]))		
 	}
 	log.Println("[gotWrap-SERVER] server: conn: closed")
@@ -77,7 +77,7 @@ func handshake(tlscon *tls.Conn) bool {
 }
 
 func SendMessage(tlscon *tls.Conn, buf[] byte) {
-	log.Printf("[gotWrap-SERVER] conn: write: %q", string(buf[:n]))
+	log.Printf("[gotWrap-SERVER] conn: write: %q", string(buf))
 	n, err := tlscon.Write(buf)
 	log.Printf("[gotWrap-SERVER] conn: wrote %d bytes", n)
 	if err != nil {
