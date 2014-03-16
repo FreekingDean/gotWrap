@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type callBack func(string)
+type callBack func(net.Addr, string)
 
 type Server struct {
 	ListenerAddr string
@@ -69,7 +69,7 @@ func (server *Server) handleClient(conn net.Addr) {
 			break
  		}
  		log.Printf("[gotWrap-SERVER] conn: read: %s", string(buf[:n]))
- 		server.MessageRec(string(buf[:n]))		
+ 		server.MessageRec(conn, string(buf[:n]))		
 	}
 	server.Lock()
 	delete(server.connections, conn)
