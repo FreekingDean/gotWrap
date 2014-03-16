@@ -57,7 +57,7 @@ func handleClient(tlscon *tls.Conn, mcb callBack) {
 			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)
 			break
  		}
- 		log.Printf("[gotWrap-SERVER] conn: read: %q", string(buf[:n]))
+ 		log.Printf("[gotWrap-SERVER] conn: read: %q", string(buf))
  		mcb(tlscon, string(buf[:n]))		
 	}
 	log.Println("[gotWrap-SERVER] server: conn: closed")
