@@ -14,7 +14,7 @@ type Server struct {
 	Protocol string
 	PemFile string
 	KeyFile string
-	messageRec callBack
+	MessageRec callBack
 	connections map[net.Addr]*tls.Conn //map[RemoteAddress]TLS_Connection
 	sync.RWMutex
 }
@@ -69,7 +69,7 @@ func (server *Server) handleClient(conn net.Addr) {
 			break
  		}
  		log.Printf("[gotWrap-SERVER] conn: read: %s", string(buf[:n]))
- 		server.messageRec(string(buf[:n]))		
+ 		server.MessageRec(string(buf[:n]))		
 	}
 	server.Lock()
 	delete(server.connections, conn)
