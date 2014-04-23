@@ -49,6 +49,6 @@ func (client *Client) listen() {
         if err != nil {
             log.Fatalf("client: dial: %s", err)
         }
-        log.Printf("client: read %s (%d bytes)", string(reply[:n]), n)
+        log.Printf("[Them]: %s", string(reply[:n]))
     }
 }

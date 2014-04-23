@@ -22,13 +22,13 @@ func (server *Server) CreateServer() {
 		log.Fatalf("[gotWrap-SERVER] loadkeys: %s", err)
 	}
 	config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
-	
+
 	listener, err := tls.Listen(server.Protocol, server.ListenerAddr, &config)
 	if err != nil {
 		log.Fatalf("[gotWrap-SERVER] listening on: %s :%s", listener.Addr().String(), err)
 	}
 	log.Print("[gotWrap-SERVER] listening")
-	
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -56,9 +56,9 @@ func handleClient(tlscon *tls.Conn, mcb callBack) {
 		if err != nil {
 			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)
 			break
- 		}
- 		log.Printf("[gotWrap-SERVER] conn: read: %q", string(buf[:n]))
- 		mcb(tlscon, string(buf[:n]))		
+		}
+		log.Printf("[Them]: %q", string(buf[:n]))
+		mcb(tlscon, string(buf[:n]))
 	}
 	log.Println("[gotWrap-SERVER] server: conn: closed")
 }
@@ -76,10 +76,8 @@ func handshake(tlscon *tls.Conn) bool {
 	return true
 }
 
-func SendMessage(tlscon *tls.Conn, buf[] byte) {
-	log.Printf("[gotWrap-SERVER] conn: write: %q", string(buf))
+func SendMessage(tlscon *tls.Conn, buf []byte) {
 	n, err := tlscon.Write(buf)
-	log.Printf("[gotWrap-SERVER] conn: wrote %d bytes", n)
 	if err != nil {
 		log.Printf("[gotWrap-SERVER] write-failed:%s", err)
 		tlscon.Close()
