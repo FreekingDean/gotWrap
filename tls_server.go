@@ -77,7 +77,7 @@ func handshake(tlscon *tls.Conn) bool {
 }
 
 func SendMessage(tlscon *tls.Conn, buf []byte) {
-	n, err := tlscon.Write(buf)
+	_, err := tlscon.Write(buf)
 	if err != nil {
 		log.Printf("[gotWrap-SERVER] write-failed:%s", err)
 		tlscon.Close()
