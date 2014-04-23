@@ -28,12 +28,11 @@ func (client *Client) Connect() {
     state := client.conn.ConnectionState()
     log.Println("client: handshake: ", state.HandshakeComplete)
     log.Println("client: mutual: ", state.NegotiatedProtocolIsMutual)
-    
     go client.listen()
 }
 
 func (client *Client) SendMessage(m string) {
-    message := "Hello\n"
+    message := m
     n, err := io.WriteString(client.conn, message)
     if err != nil {
         log.Fatalf("client: write: %s", err)
