@@ -49,9 +49,8 @@ func (server *Server) CreateServer() {
 func handleClient(tlscon *tls.Conn, mcb callBack) {
 	defer tlscon.Close()
 	log.Print("[gotWrap-SERVER] conn: type assert to TLS succeedded")
-	buf := make([]byte, 512)
+	buf := make([]byte, 8192)
 	for {
-		log.Print("[gotWrap-SERVER] conn: waiting")
 		n, err := tlscon.Read(buf)
 		if err != nil {
 			log.Printf("[gotWrap-SERVER] conn: read err: %s", err)

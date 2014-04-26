@@ -46,7 +46,7 @@ func (client *Client) SendMessage(m string) {
 func (client *Client) listen() {
     defer client.conn.Close()
     for {
-        reply := make([]byte, 256)
+        reply := make([]byte, 8192)
         n, err := client.conn.Read(reply)
         if err != nil {
             log.Fatalf("client: dial: %s", err)
