@@ -6,8 +6,6 @@ import (
     "log"
 )
 
-type callBack func(string)
-
 type Client struct {
     RemoteAddr string
     Protocol string
