@@ -6,11 +6,14 @@ import (
     "log"
 )
 
+type callBack func(string)
+
 type Client struct {
     RemoteAddr string
     Protocol string
     PemFile string
     KeyFile string
+	  MessageRec callBack
     conn *tls.Conn
 }
 
@@ -38,7 +41,6 @@ func (client *Client) SendMessage(m string) {
         log.Fatalf("client: write: %s", err)
         client.conn.Close()
     }
-    log.Printf("client: wrote %s (%d bytes)", message, n)
 }
 
 func (client *Client) listen() {
@@ -49,6 +51,6 @@ func (client *Client) listen() {
         if err != nil {
             log.Fatalf("client: dial: %s", err)
         }
-        log.Printf("[Them]: %s", string(reply[:n]))
+        mcb(string(reply[:n]))
     }
 }
