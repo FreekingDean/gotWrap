@@ -51,6 +51,6 @@ func (client *Client) listen() {
         if err != nil {
             log.Fatalf("client: dial: %s", err)
         }
-        mcb(string(reply[:n]))
+        client.MessageRec(string(reply[:n]))
     }
 }
