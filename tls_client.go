@@ -36,7 +36,7 @@ func (client *Client) Connect() {
 
 func (client *Client) SendMessage(m string) {
     message := m
-    n, err := io.WriteString(client.conn, message)
+    _, err := io.WriteString(client.conn, message)
     if err != nil {
         log.Fatalf("client: write: %s", err)
         client.conn.Close()
