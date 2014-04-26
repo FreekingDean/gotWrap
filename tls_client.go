@@ -6,12 +6,14 @@ import (
     "log"
 )
 
+type callBackClient func(string)
+
 type Client struct {
     RemoteAddr string
     Protocol string
     PemFile string
     KeyFile string
-	  MessageRec callBack
+	  MessageRec callBackClient
     conn *tls.Conn
 }
 
